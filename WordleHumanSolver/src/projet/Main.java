@@ -17,6 +17,7 @@ public class Main {
 	public IhmWordle getIHM() { return ihm; }
 	private Thread gameTask;
 	public Thread getGameTask() { return gameTask; }
+	public boolean mode = true;//mode true = humain / false = modele
 	
     public static void main(String[] args) {
     	new Main();
@@ -28,7 +29,10 @@ public class Main {
 			@Override
 			public void run() {
 				ihm.clear();
-				new Francais().play();
+				if(mode)
+					new Francais().play();
+				else
+					new ModeleFrancais().play();
 			}
 		};
 		EventQueue.invokeLater(new Runnable() {
@@ -68,7 +72,10 @@ public class Main {
 			@Override
 			public void run() {
 				ihm.clear();
-				new Francais().play();
+				if(mode)
+					new Francais().play();
+				else
+					new ModeleFrancais().play();
 			}
 		};
 		return temp;

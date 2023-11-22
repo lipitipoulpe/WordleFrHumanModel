@@ -26,8 +26,7 @@ import javax.swing.JTextArea;
 public class IhmWordle extends JFrame {
 	private String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private boolean running = false,
-					guested = false,
-					mode = true;//mode true = humain / false = modele
+					guested = false;
 	private String currentWord = "";
 	private int ntry,nLetter=0;
 	private JTable table;
@@ -82,12 +81,12 @@ public class IhmWordle extends JFrame {
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
-						mode = true;
+						Main.getMain().mode = true;
 						running = true;
 						Main.getMain().resetGameTask().start();
 					}
 				} else {
-					mode = true;
+					Main.getMain().mode = true;
 					running=true;
 					Main.getMain().getGameTask().start();
 				}
@@ -106,12 +105,12 @@ public class IhmWordle extends JFrame {
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
-						mode = false;
+						Main.getMain().mode = false;
 						running = true;
 						Main.getMain().resetGameTask().start();
 					}
 				} else {
-					mode = false;
+					Main.getMain().mode = false;
 					running=true;
 					Main.getMain().getGameTask().start();
 				}
@@ -179,7 +178,7 @@ public class IhmWordle extends JFrame {
 	}
 
 	public void clear() {
-		data = new Data(mode);
+		data = new Data(Main.getMain().mode);
 		initTable();
 	}
 
