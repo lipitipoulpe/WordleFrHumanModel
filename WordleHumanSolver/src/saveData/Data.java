@@ -34,8 +34,8 @@ public class Data implements java.io.Serializable{
 		try {
 			String name = Date.from(Instant.now()).toString().replaceAll(" ", "_").replaceAll(":","_")+".txt";
 			File parent = new File("datas");
-			if(!parent.exists())
-				parent.createNewFile();
+			if(!parent.isDirectory())
+				parent.mkdir();
 			File f = new File(parent,name);
 			f.createNewFile();
 			FileOutputStream fileOut = new FileOutputStream(f);

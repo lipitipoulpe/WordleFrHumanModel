@@ -30,17 +30,12 @@ public class Main {
 				ihm.clear();
 				new Francais().play();
 			}
-			@Override
-			public void interrupt() {
-				ihm.data.save();
-				super.interrupt();
-			}
 		};
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					ihm = new IhmWordle();
-					ihm.getFrame().setVisible(true);
+					ihm.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -65,6 +60,18 @@ public class Main {
 	}
 	public List<WordInfo> getWords(){
 			return words;
+	}
+
+	public Thread resetGameTask() {
+		ihm.data.save();
+		Thread temp = new Thread() {
+			@Override
+			public void run() {
+				ihm.clear();
+				new Francais().play();
+			}
+		};
+		return temp;
 	}
 }
 

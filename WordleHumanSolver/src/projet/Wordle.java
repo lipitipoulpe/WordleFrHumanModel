@@ -85,10 +85,10 @@ public abstract class Wordle {
     }
 
     // print instructions
-    public abstract void printInstructions();
+    //public abstract void printInstructions();
 
     // ask for first guess
-    public abstract void askForFirstGuess();
+    //public abstract void askForFirstGuess();
 
 
     // ask the user for a word, check for validity
@@ -102,7 +102,7 @@ public abstract class Wordle {
     }
 
     // print definition
-    public abstract void printDefinitionLink (String randomChosenWord);
+    //public abstract void printDefinitionLink (String randomChosenWord);
 
     public void loopThroughSixGuesses(List<String> wordList) {
 
@@ -152,9 +152,9 @@ public abstract class Wordle {
                 }
                 System.out.println();
 
-                // print alphabet
-                printingColouredAlphabet(greenLetters, yellowLetters, greyLetters);
             }
+            // print alphabet
+            //TODO in ihm printingColouredAlphabet(greenLetters, yellowLetters, greyLetters);
 
             // Losing statement
             System.out.println();
@@ -166,7 +166,7 @@ public abstract class Wordle {
 
 
     // printing the alphabet including the colors for a visual exposition of information
-    public abstract void printingColouredAlphabet(List<Character> greenLetters, List<Character> yellowLetters, List<Character> greyLetters);
+    //public abstract void printingColouredAlphabet(List<Character> greenLetters, List<Character> yellowLetters, List<Character> greyLetters);
 
     // play method that calls on all other methods.
     public void play () {
@@ -182,7 +182,7 @@ public abstract class Wordle {
         chosenWordWithoutAccents = removeAccents(chosenWord);
 
         // Instructions to the game
-        this.printInstructions();
+//TODO in log        this.printInstructions();
 
         // ask the user for the first guess
 //        this.askForFirstGuess();

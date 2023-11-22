@@ -23,10 +23,8 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 import javax.swing.JTextArea;
 
-public class IhmWordle {
+public class IhmWordle extends JFrame {
 	private String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	private JFrame frame;
-	public JFrame getFrame() {return frame;}
 	private boolean running = false,
 					guested = false,
 					mode = true;//mode true = humain / false = modele
@@ -43,30 +41,32 @@ public class IhmWordle {
 	public IhmWordle() {
 		initialize();
 	}
-
+	public void keyPressed(KeyEvent e) {
+        System.out.println("keyPressed");
+    }
+    public void keyTyped(KeyEvent e) {
+        System.out.println("keyTyped");
+    }
+	public void keyReleased(KeyEvent e) {
+        System.out.println("keyReleased");
+		if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
+			backspace();
+		else if (e.getKeyCode()==KeyEvent.VK_ENTER)
+			enter();
+		else if (((e.getKeyCode() > 64 && e.getKeyCode() < 91) || (e.getKeyCode() > 96 && e.getKeyCode() < 123))
+			&& letters.contains(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase()))
+					addletter(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase());
+    }
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 450);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new BorderLayout(0, 0));
-		frame.addKeyListener(new KeyListener() {
-			@Override public void keyTyped(KeyEvent e) {
-				if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
-					backspace();
-				else if (e.getKeyCode()==KeyEvent.VK_ENTER)
-					enter();
-				else if (((e.getKeyCode() > 64 && e.getKeyCode() < 91) || (e.getKeyCode() > 96 && e.getKeyCode() < 123))
-					&& letters.contains(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase()))
-							addletter(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase());
-			}
-			@Override public void keyReleased(KeyEvent e) {}
-			@Override public void keyPressed(KeyEvent e) {}
-		});
+		setBounds(100, 100, 450, 450);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(new BorderLayout(0, 0));
+		
 		JPanel topPanel = new JPanel();
-		frame.getContentPane().add(topPanel, BorderLayout.NORTH);
+		getContentPane().add(topPanel, BorderLayout.NORTH);
 
 		JSplitPane splitPane = new JSplitPane();
 		topPanel.add(splitPane);
@@ -76,10 +76,15 @@ public class IhmWordle {
 			public void actionPerformed(ActionEvent e) {
 				if(running) {
 					if(askBoolConfirm("restart?")) {
-						Main.getMain().getGameTask().interrupt();
+						try {
+							Main.getMain().getGameTask().stop();
+							Main.getMain().getGameTask().join();
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
 						mode = true;
-						running=true;
-						Main.getMain().getGameTask().start();
+						running = true;
+						Main.getMain().resetGameTask().start();
 					}
 				} else {
 					mode = true;
@@ -95,10 +100,15 @@ public class IhmWordle {
 			public void actionPerformed(ActionEvent e) {
 				if(running) {
 					if(askBoolConfirm("restart?")) {
-						Main.getMain().getGameTask().interrupt();
+						try {
+							Main.getMain().getGameTask().stop();
+							Main.getMain().getGameTask().join();
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
 						mode = false;
-						running=true;
-						Main.getMain().getGameTask().start();
+						running = true;
+						Main.getMain().resetGameTask().start();
 					}
 				} else {
 					mode = false;
@@ -110,14 +120,14 @@ public class IhmWordle {
 		splitPane.setRightComponent(startModele);
 
 		table = initTable();
-		frame.getContentPane().add(table, BorderLayout.CENTER);
+		getContentPane().add(table, BorderLayout.CENTER);
 		logger = new JTextArea("start");
 		JScrollPane jsp= new JScrollPane(
                 logger,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,    //La barre verticale toujours visible
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); //La barre horizontale toujours visible
 		jsp.setPreferredSize(new Dimension(200,150));
-		frame.add(jsp,BorderLayout.SOUTH);
+		add(jsp,BorderLayout.SOUTH);
 	}
 	private JTable initTable() {
 		JTable temp = new JTable(5,5);
@@ -174,7 +184,7 @@ public class IhmWordle {
 	}
 
 	protected boolean askBoolConfirm(String txt) {
-		return JOptionPane.showConfirmDialog(frame,txt, "Check",
+		return JOptionPane.showConfirmDialog(this,txt, "Check",
 	               JOptionPane.YES_NO_OPTION,
 	               JOptionPane.QUESTION_MESSAGE)==JOptionPane.YES_OPTION?true:false;
 	}
