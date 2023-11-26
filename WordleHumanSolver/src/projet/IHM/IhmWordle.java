@@ -3,69 +3,83 @@ package projet.IHM;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-import projet.Francais;
 import projet.Main;
+import projet.Wordle;
 import saveData.Data;
 
 import javax.swing.JButton;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.JTextArea;
 
 public class IhmWordle extends JFrame {
 	private String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private boolean running = false,
-					guested = false;
-	private String currentWord = "";
-	private int ntry,nLetter=0;
+			guested = false;
+	private int ntry = 0,nLetter=0;
 	private JTable table;
 	private JTextArea logger;
 
+	public char[][][] tabGues;
+	private String currentWord = "";
 	public Data data;
 
 	/**
 	 * Create the application.
 	 */
-	public IhmWordle() {
-		initialize();
+	public IhmWordle() { initialize(); }
+
+	private class MyDispatcher implements KeyEventDispatcher {
+		@Override
+		public boolean dispatchKeyEvent(KeyEvent e) {
+			if(IhmWordle.this.isFocused() && running) {
+				if (e.getID() == KeyEvent.KEY_RELEASED) {
+					if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
+						backspace();
+					else if (e.getKeyCode()==KeyEvent.VK_ENTER)
+						enter();
+					else if (((e.getKeyCode() > 64 && e.getKeyCode() < 91) || (e.getKeyCode() > 96 && e.getKeyCode() < 123))
+							&& letters.contains(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase()))
+						addletter(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase().charAt(0));
+				}
+			}
+			return false;
+		}
 	}
-	public void keyPressed(KeyEvent e) {
-        System.out.println("keyPressed");
-    }
-    public void keyTyped(KeyEvent e) {
-        System.out.println("keyTyped");
-    }
-	public void keyReleased(KeyEvent e) {
-        System.out.println("keyReleased");
-		if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
-			backspace();
-		else if (e.getKeyCode()==KeyEvent.VK_ENTER)
-			enter();
-		else if (((e.getKeyCode() > 64 && e.getKeyCode() < 91) || (e.getKeyCode() > 96 && e.getKeyCode() < 123))
-			&& letters.contains(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase()))
-					addletter(KeyEvent.getKeyText(e.getKeyCode()).toUpperCase());
-    }
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyDispatcher());
 		setBounds(100, 100, 450, 450);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().setLayout(new BorderLayout(0, 0));
-		
+		addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+        		if(data!=null)data.save();
+                System.exit(0);
+            }
+        });
+		getRootPane().setLayout(new BorderLayout(0, 0));
+
 		JPanel topPanel = new JPanel();
-		getContentPane().add(topPanel, BorderLayout.NORTH);
+		getRootPane().add(topPanel, BorderLayout.NORTH);
 
 		JSplitPane splitPane = new JSplitPane();
 		topPanel.add(splitPane);
@@ -73,23 +87,17 @@ public class IhmWordle extends JFrame {
 		startHuman.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(running) {
-					if(askBoolConfirm("restart?")) {
-						try {
-							Main.getMain().getGameTask().stop();
-							Main.getMain().getGameTask().join();
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-						Main.getMain().mode = true;
-						running = true;
-						Main.getMain().resetGameTask().start();
+				if(running && askBoolConfirm("restart as humain?")) {
+					try { 
+						Main.getMain().getGameTask().stop();
+						Main.getMain().getGameTask().join();
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
 					}
-				} else {
-					Main.getMain().mode = true;
-					running=true;
-					Main.getMain().getGameTask().start();
-				}
+				} else if(running) return;
+				Main.getMain().mode = true;
+				running = true;
+				Main.getMain().resetGameTask().start();
 			}
 		});
 		splitPane.setLeftComponent(startHuman);
@@ -97,58 +105,72 @@ public class IhmWordle extends JFrame {
 		startModele.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(running) {
-					if(askBoolConfirm("restart?")) {
-						try {
-							Main.getMain().getGameTask().stop();
-							Main.getMain().getGameTask().join();
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-						Main.getMain().mode = false;
-						running = true;
-						Main.getMain().resetGameTask().start();
+				if(running && askBoolConfirm("restart as modele?")) {
+					try { 
+						Main.getMain().getGameTask().stop();
+						Main.getMain().getGameTask().join();
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
 					}
-				} else {
-					Main.getMain().mode = false;
-					running=true;
-					Main.getMain().getGameTask().start();
-				}
+				} else if(running) return;
+				Main.getMain().mode = false;
+				running = true;
+				Main.getMain().resetGameTask().start();
 			}
 		});
 		splitPane.setRightComponent(startModele);
 
-		table = initTable();
-		getContentPane().add(table, BorderLayout.CENTER);
+		initTable();
+		table.setRowSelectionAllowed(false);
+		table.repaint();
+		
+		getRootPane().add(table, BorderLayout.CENTER);
 		logger = new JTextArea("start");
 		JScrollPane jsp= new JScrollPane(
-                logger,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,    //La barre verticale toujours visible
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); //La barre horizontale toujours visible
+				logger,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,    //La barre verticale toujours visible
+				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); //La barre horizontale toujours visible
 		jsp.setPreferredSize(new Dimension(200,150));
-		add(jsp,BorderLayout.SOUTH);
+		jsp.setAutoscrolls(true);
+		getRootPane().add(jsp,BorderLayout.SOUTH);
 	}
-	private JTable initTable() {
-		JTable temp = new JTable(5,5);
-		temp.setFocusable(false);
-		temp.setRowHeight(40);
-		TableColumnModel columnModel = temp.getColumnModel();
+	private void initTable() {
+		tabGues = new char[5][5][2];
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				tabGues[i][j][0] = ' ';
+				tabGues[i][j][1] = ' ';
+			}
+		}
+		table = new JTable(5,5){
+			public boolean isCellEditable(int row, int column) {                
+	                return false;               
+	        };
+	    };;
+		table.setFocusable(false);
+		table.setOpaque(true);
+		table.setDefaultRenderer(Object.class,new CustomRenderer());
+		table.setRowHeight(40);
+		TableColumnModel columnModel = table.getColumnModel();
 		for(int i=0;i<5;i++) columnModel.getColumn(i).setWidth(40);
-		return temp;
 	}
-
 	private void updateCurrentWord() {
 		String temp = "";
 		for(int i=0;i<nLetter;i++)
-			temp += table.getModel().getValueAt(ntry, i);
+			temp += tabGues[ntry][i][0];
 		currentWord = temp;
 	}
-	
-	protected void addletter(String keyText) {
+
+	protected void addletter(char keyText) {
 		if(nLetter<5) {
-			table.getModel().setValueAt(keyText,ntry, nLetter);
-			nLetter++;			
+			tabGues[ntry][nLetter][0] = keyText;
+			nLetter++;
+			updateCurrentWord();
+			data.addWord(currentWord);
+			log(currentWord);
 		} else { log("deja 5 lettres!");}
+		validate();
+		repaint();
 	}
 
 	protected void enter() {
@@ -163,17 +185,19 @@ public class IhmWordle extends JFrame {
 
 	protected void backspace() {
 		if(nLetter>0) {
-			table.getModel().setValueAt("",ntry, nLetter-1);
-			updateCurrentWord();
+			tabGues[ntry][nLetter-1][0] = ' ';
 			nLetter--;
+			updateCurrentWord();
 			if(nLetter>0) {
 				data.addWord(currentWord);
 				log(currentWord);
 			}
 		} else { log("aucune lettre à effacer!");}
+		validate();
+		repaint();
 	}
 
-	private void log(String log) {
+	public void log(String log) {
 		logger.setText(logger.getText()+"\n"+log);
 	}
 
@@ -184,17 +208,20 @@ public class IhmWordle extends JFrame {
 
 	protected boolean askBoolConfirm(String txt) {
 		return JOptionPane.showConfirmDialog(this,txt, "Check",
-	               JOptionPane.YES_NO_OPTION,
-	               JOptionPane.QUESTION_MESSAGE)==JOptionPane.YES_OPTION?true:false;
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE)==JOptionPane.YES_OPTION?true:false;
 	}
 
 	public String getGues() {
+		updateCurrentWord();
 		while(!guested)	{
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException ignored) {}
 		}
+		guested = false;
 		String temp = currentWord;
+		System.out.println("guess : " + temp);
 		updateCurrentWord();
 		return temp;
 	}
@@ -202,10 +229,26 @@ public class IhmWordle extends JFrame {
 	public void setTry(int i) {
 		ntry = i;
 	}
-
 	public void end(boolean win,String correctWord) {
 		log(win?"Victoire!":("Raté, le mot était "+correctWord));
-		data.end();
+		data.setEnd();
 		running=false;
+	}
+	public class CustomRenderer extends JLabel implements TableCellRenderer {
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+				int row, int column) {
+			setText(tabGues[row][column][0]+"");
+			setOpaque(true);
+			setHorizontalTextPosition(CustomRenderer.CENTER);
+			switch(tabGues[row][column][1]) {
+				case Wordle.DEFAULT -> setBackground(Color.LIGHT_GRAY);
+				case Wordle.VERT -> setBackground(Color.GREEN);
+				case Wordle.JAUNE -> setBackground(Color.YELLOW);
+				case Wordle.GRIS -> setBackground(Color.GRAY);
+				default -> setBackground(Color.DARK_GRAY);
+			}
+			return this;
+		}
 	}
 }

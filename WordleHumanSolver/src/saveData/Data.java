@@ -8,16 +8,21 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class Data implements java.io.Serializable{
-	private boolean type,//0 = human, 1 = modele
-					end = false;//partie finie
-	private List<String> words = new ArrayList<>();
-	private List<String> validateWords = new ArrayList<>();
-	private int ntry = 0;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-	public Data(Boolean type) {
-		this.type = type;
+public record Data(AtomicBoolean type, AtomicBoolean isEnd,List<String> words,List<String> validateWords,AtomicInteger ntry,AtomicReference<String> goodWord){
+	//type : 0 = human, 1 = modele
+	//isEnd //partie finie ou non
+
+	public Data(boolean type) {
+		this(new AtomicBoolean(type),new AtomicBoolean(false),new ArrayList<>(),new ArrayList<>(),new AtomicInteger(0),new AtomicReference<String>());
+	}
+	public void setGoodWord(String gw) {
+		goodWord.set(gw);
 	}
 	public void addWord(String e) {
 		words.add(e);
@@ -25,27 +30,20 @@ public class Data implements java.io.Serializable{
 	public void validateWord(String e) {
 		words.add(e+"<==");
 		validateWords.add(e);
-		ntry+=1;
+		ntry.incrementAndGet();
 	}
-	public void end() {
-		end = true;
+	public void setEnd() {
+		isEnd.set(true);
 	}
 	public void save() {
-		try {
-			String name = Date.from(Instant.now()).toString().replaceAll(" ", "_").replaceAll(":","_")+".txt";
-			File parent = new File("datas");
-			if(!parent.isDirectory())
-				parent.mkdir();
-			File f = new File(parent,name);
-			f.createNewFile();
-			FileOutputStream fileOut = new FileOutputStream(f);
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(this);
-			out.close();
-			fileOut.close();
+        ObjectMapper mapper = new ObjectMapper();
+    	String name = Date.from(Instant.now()).toString().replaceAll(" ", "_").replaceAll(":","_")+".json";
+		File f = new File("datas\\"+name);
+        try {
+			mapper.writeValue(f, this);
 			System.out.println("Serialized data is saved in /data/"+name);
-		} catch (IOException i) {
-			i.printStackTrace();
-		}
-	}
+        } catch (IOException e) {
+            System.out.println("Impossible de sauvegarder le fichier " + f.getAbsolutePath());
+        }
+    }
 }

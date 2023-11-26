@@ -29,6 +29,7 @@ public class Main {
 			@Override
 			public void run() {
 				ihm.clear();
+				ihm.log((mode?"human":"modele")+" start game");
 				if(mode)
 					new Francais().play();
 				else
@@ -55,10 +56,8 @@ public class Main {
 		        words.add(new WordInfo(values[0],values[1],Float.parseFloat(values[2]),Integer.parseInt(values[3]),Integer.parseInt(values[4])));
 		    }
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -67,11 +66,12 @@ public class Main {
 	}
 
 	public Thread resetGameTask() {
-		ihm.data.save();
+		if(ihm.data!=null)ihm.data.save();
 		Thread temp = new Thread() {
 			@Override
 			public void run() {
 				ihm.clear();
+				ihm.log("game start");
 				if(mode)
 					new Francais().play();
 				else
