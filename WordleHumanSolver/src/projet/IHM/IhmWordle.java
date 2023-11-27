@@ -177,8 +177,6 @@ public class IhmWordle extends JFrame {
 		if(nLetter==5) {
 			data.validateWord(currentWord);
 			log(currentWord+"<==");
-			ntry++;
-			nLetter=0;
 			guested=true;
 		} else { log("il faut 5 lettres pour valider!");}
 	}
@@ -199,6 +197,7 @@ public class IhmWordle extends JFrame {
 
 	public void log(String log) {
 		logger.setText(logger.getText()+"\n"+log);
+	    logger.setCaretPosition(logger.getDocument().getLength());
 	}
 
 	public void clear() {
@@ -222,15 +221,15 @@ public class IhmWordle extends JFrame {
 		guested = false;
 		String temp = currentWord;
 		System.out.println("guess : " + temp);
-		updateCurrentWord();
 		return temp;
 	}
 
 	public void setTry(int i) {
 		ntry = i;
+		nLetter = 0;
 	}
 	public void end(boolean win,String correctWord) {
-		log(win?"Victoire!":("Raté, le mot était "+correctWord));
+		log(win?"Victoire!":("Perdu, le mot était "+correctWord));
 		data.setEnd();
 		running=false;
 	}
@@ -240,7 +239,7 @@ public class IhmWordle extends JFrame {
 				int row, int column) {
 			setText(tabGues[row][column][0]+"");
 			setOpaque(true);
-			setHorizontalTextPosition(CustomRenderer.CENTER);
+			this.setHorizontalAlignment(JLabel.CENTER);
 			switch(tabGues[row][column][1]) {
 				case Wordle.DEFAULT -> setBackground(Color.LIGHT_GRAY);
 				case Wordle.VERT -> setBackground(Color.GREEN);
@@ -250,5 +249,14 @@ public class IhmWordle extends JFrame {
 			}
 			return this;
 		}
+	}
+	public void resetRow(String w) {
+		log("mot inconnu : "+w);
+		for (int j = 0; j < 5; j++) {
+			tabGues[ntry][j][0] = ' ';
+		}
+		nLetter = 0;
+		validate();
+		repaint();
 	}
 }

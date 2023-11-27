@@ -30,32 +30,19 @@ public abstract class Wordle {
 		List<String> wordList = new ArrayList<>();
 		for(WordInfo w : Main.getMain().getWords())
 		{
-			wordList.add(w.word()); 
-		}
-		return wordList;
-	}
-	private List<String> readDictionaryWithoutAccents() {
-		List<String> wordList = readDictionary();
-		for(String s : wordList){
-			wordList.set(wordList.indexOf(s), removeAccents(s));
+			if(w.freqfilms2()>0.05f)wordList.add(w.word().toUpperCase()); 
 		}
 		return wordList;
 	}
 
 	// Get a random word from the dictionary arraylist
 	public String getRandomWord(List<String> wordList) {
-		Random rand = new Random(); //instance of random class
-		int upperbound = wordList.size();
-		// generate random values from 0 to arrayList size
-		int int_random = rand.nextInt(upperbound);
-		return wordList.get(int_random);
+		return wordList.get(new Random().nextInt(wordList.size()));
 	}
 
 	public String removeAccents(String str) {
-		return str.replaceAll("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e").replace("à", "a").replace("ï", "i").replace("î", "i");
+		return str.replaceAll("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e").replace("à", "a").replace("ï", "i").replace("î", "i").replace("ô", "o");
 	}
-
-	//public abstract void printInstructions();
 
 	// ask the user for a word, check for validity
 	public abstract String obtainValidUserWord (int index);
@@ -102,6 +89,13 @@ public abstract class Wordle {
 		}
 		return true;
 	}
+	protected boolean checkContains(List<String> l, String w) {
+		for(String s : l) {
+			if(s.equals(w))
+				return true;
+		}
+		return false;
+	}
 
 	private int freqOfChar(String chosenWordWithoutAccents2, char charAt) {
 		int ret = 0;
@@ -111,21 +105,13 @@ public abstract class Wordle {
 		return ret;
 	}
 
-	// printing the alphabet including the colors for a visual exposition of information
-	//public abstract void printingColouredAlphabet(List<Character> greenLetters, List<Character> yellowLetters, List<Character> greyLetters);
-
 	// play method that calls on all other methods.
 	public void play () {
 		// Selecting a random word from the dictionary
-		chosenWord = getRandomWord(this.readDictionaryWithoutAccents()).toUpperCase();
+		chosenWordList = this.readDictionary();
+		chosenWord = getRandomWord(chosenWordList);
 		ihm.data.setGoodWord(chosenWord);
-		ihm.log(chosenWord);
-
-		// Instructions to the game
-		//TODO in log        this.printInstructions();
-
 		this.loopThroughSixGuesses();
-
 	}
 
 
