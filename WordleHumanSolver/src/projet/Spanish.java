@@ -76,7 +76,7 @@ public class Spanish extends Wordle { // Spanish child class from parent class W
             }
         }
 
-        char enie = 'Ã‘';
+        char enie ='ñ';
 
         if (greenLetters.contains(enie)) {
                 System.out.print(ANSI_GREEN_BACKGROUND + enie + ANSI_RESET + " ");
