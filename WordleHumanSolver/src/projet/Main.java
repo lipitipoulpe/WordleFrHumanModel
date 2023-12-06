@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import projet.IHM.IhmWordle;
+import saveData.DixData;
 
 public class Main {
 	private static Main main;
@@ -18,6 +19,7 @@ public class Main {
 	private Thread gameTask;
 	public Thread getGameTask() { return gameTask; }
 	public boolean mode = true;//mode true = humain / false = modele
+	public static final List<String> chosenWords = new ArrayList<>(List.of(new String[]{"VENEZ","CARNE","RAMPE","LEGOS","TASSE","FIXER","NAZES","TIRES","SALTO","ELEVE"}));
 	
     public static void main(String[] args) {
     	new Main();
@@ -31,9 +33,9 @@ public class Main {
 				ihm.clear();
 				ihm.log((mode?"human":"modele")+" start game");
 				if(mode)
-					new Francais().play();
+					new Francais().play10(chosenWords);
 				else
-					new ModeleFrancais().play();
+					new ModeleFrancais().play10(chosenWords);
 			}
 		};
 		EventQueue.invokeLater(new Runnable() {
@@ -47,13 +49,15 @@ public class Main {
 			}
 		});
     }
-    public final List<WordInfo> words = new ArrayList<>();
-	private void loadWords() {
-		try (BufferedReader br = new BufferedReader(new FileReader("motsFR.csv"))) {
+    public static final List<WordInfo> wordsInfo = new ArrayList<>();
+
+    public static void loadWords() {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader("motsFR.csv"))) {
 		    String line = br.readLine();
 		    while ((line = br.readLine()) != null) {
 		        String[] values = line.split(",");
-		        words.add(new WordInfo(values[0],values[1],Float.parseFloat(values[2]),Integer.parseInt(values[3]),Integer.parseInt(values[4])));
+		        wordsInfo.add(new WordInfo(values[0],values[1],Float.parseFloat(values[2]),Integer.parseInt(values[3]),Integer.parseInt(values[4])));
 		    }
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -61,21 +65,23 @@ public class Main {
 			e.printStackTrace();
 		}
 	}
-	public List<WordInfo> getWords(){
-			return words;
+	
+	public static List<WordInfo> getWordsInfo(){
+			return wordsInfo;
 	}
 
 	public Thread resetGameTask() {
-		if(ihm.data!=null)ihm.data.save();
+//		if(ihm.data!=null)ihm.data.save(ihm.tabGues);
 		Thread temp = new Thread() {
 			@Override
 			public void run() {
+				ihm.datas = new DixData();
 				ihm.clear();
 				ihm.log("game start");
 				if(mode)
-					new Francais().play();
+					new Francais().play10(Main.chosenWords);
 				else
-					new ModeleFrancais().play();
+					new ModeleFrancais().play10(Main.chosenWords);
 			}
 		};
 		return temp;

@@ -1,34 +1,40 @@
 package projet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import projet.IHM.IhmWordle;
-
+import saveData.Data;
 
 public abstract class Wordle {
 	protected String chosenWord;
 	protected List<String> chosenWordList;
-	protected String result;
-	protected String youWonMessage;
-	protected String youLostMessage;
+	protected List<String> wordList;
+	public void setChosenWordList(List<String> s) {
+		chosenWordList = s;
+	}
 	private IhmWordle ihm;
 
 	// Declaring the background colors
-	public static final char GRIS = 'G';
-	public static final char VERT = 'V';
-	public static final char JAUNE = 'J';
-	public static final char DEFAULT = ' ';
+	public static final Character GRIS = 'G';
+	public static final Character VERT = 'V';
+	public static final Character JAUNE = 'J';
+	public static final Character DEFAULT = ' ';
 
 	// Constructor
 	public Wordle() {
+		wordList = readDictionary();
 		ihm = Main.getMain().getIHM();
 	}
 
 	// METHODS
 	// Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
-	public List<String> readDictionary() {
+	public static List<String> readDictionary() {
 		List<String> wordList = new ArrayList<>();
-		for(WordInfo w : Main.getMain().getWords())
+		for(WordInfo w : Main.getWordsInfo())
 		{
 			if(w.freqfilms2()>0.05f)wordList.add(w.word().toUpperCase()); 
 		}
@@ -36,8 +42,13 @@ public abstract class Wordle {
 	}
 
 	// Get a random word from the dictionary arraylist
-	public String getRandomWord(List<String> wordList) {
-		return wordList.get(new Random().nextInt(wordList.size()));
+	public String getRandomWord() {
+		return chosenWordList.get(new Random().nextInt(chosenWordList.size()));
+	}
+	private String getRandomWord10() {
+		String s = chosenWordList.get(new Random().nextInt(chosenWordList.size()));
+		chosenWordList.remove(s);
+		return s;
 	}
 
 	public String removeAccents(String str) {
@@ -48,39 +59,41 @@ public abstract class Wordle {
 	public abstract String obtainValidUserWord (int index);
 
 	public void loopThroughSixGuesses() {
-		for (int j = 0; j < 6;) {
+		ihm.running=true;
+		for (int j = 0; j < 5;j++) {
 			ihm.setTry(j);
 			Main.getMain().getIHM().validate();
 			Main.getMain().getIHM().repaint();
 			String userWord = obtainValidUserWord(j);
-			
+			Main.getMain().getIHM().data.validateWord(userWord);
 			// check for green/yellow/grey letters
+			Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
 			for (int i = 0; i < 5; i++) {
-				Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
+				fLettre.putIfAbsent(userWord.charAt(i), 0);
 				if (userWord.charAt(i) == chosenWord.charAt(i)) {
 					ihm.tabGues[j][i][1] = VERT;
-					fLettre.put(userWord.charAt(i), fLettre.getOrDefault(userWord.charAt(i), 0)+1);
-				} else if (freqOfChar(chosenWord,userWord.charAt(i))>fLettre.getOrDefault(userWord.charAt(i), 0)){
-					fLettre.put(userWord.charAt(i), fLettre.getOrDefault(userWord.charAt(i), 0)+1);
+					fLettre.put(userWord.charAt(i), fLettre.get(userWord.charAt(i))+1);
+				}
+			}
+			for (int i = 0; i < 5; i++) {
+				if (ihm.tabGues[j][i][1]!=VERT && freqOfChar(chosenWord,userWord.charAt(i))>fLettre.get(userWord.charAt(i))){
+					fLettre.put(userWord.charAt(i), fLettre.get(userWord.charAt(i))+1);
 					ihm.tabGues[j][i][1] = JAUNE;
-				} else {
+				} else if(ihm.tabGues[j][i][1]!=VERT) {
 					ihm.tabGues[j][i][1] = GRIS;
 				}
 			}
-			j++;
 			Main.getMain().getIHM().validate();
 			Main.getMain().getIHM().repaint();
 			if(checkEqual(userWord,chosenWord)) {
 				ihm.end(true, chosenWord);
 				break;
 			}
-			if (j == 5) {
+			if (j == 4) {
 				ihm.end(false, chosenWord);
 			}
 		}
 	}
-
-
 	private boolean checkEqual(String u, String c) {
 		if(u.length()!=c.length())return false;
 		for (int i = 0; i < u.length(); i++) {
@@ -96,7 +109,6 @@ public abstract class Wordle {
 		}
 		return false;
 	}
-
 	private int freqOfChar(String chosenWordWithoutAccents2, char charAt) {
 		int ret = 0;
 		for(char c : chosenWordWithoutAccents2.toCharArray()) {
@@ -108,14 +120,37 @@ public abstract class Wordle {
 	// play method that calls on all other methods.
 	public void play () {
 		// Selecting a random word from the dictionary
-		chosenWordList = this.readDictionary();
-		chosenWord = getRandomWord(chosenWordList);
+		chosenWordList = readDictionary();
+		chosenWord = getRandomWord();
 		ihm.data.setGoodWord(chosenWord);
 		this.loopThroughSixGuesses();
 	}
+	public void play10(List<String> chosenWords) {
+		// Selecting a random word from the dictionary
+		chosenWordList = new ArrayList<String>(chosenWords);
+		for (int i = 0; i < 10; i++) {
+			ihm.clear();
+			chosenWord = getRandomWord10();
+			ihm.data.setGoodWord(chosenWord);
+			this.loopThroughSixGuesses();
+			if(ihm.data!=null)ihm.datas.addData(new Data(ihm.data,getAsList(ihm.tabGues)));
+		}
+		ihm.datas.save();
+	}
 
-
-
-
-
+	//tab : ntry,nLettre,0 lettre/1 couleur
+	private List<List<List<String>>> getAsList(char[][][] tabGues) {
+		List<List<List<String>>> ret = new ArrayList<>();
+		for (int ntry = 0; ntry < 5; ntry++) {
+			List<List<String>> sub1 = new ArrayList<>();
+			for (int nLettre = 0; nLettre < 5; nLettre++) {
+				List<String> sub2 = new ArrayList<>();
+				sub2.add(tabGues[ntry][nLettre][0]+"");
+				sub2.add(tabGues[ntry][nLettre][1]+"");
+				sub1.add(sub2);
+			}
+			ret.add(sub1);
+		}
+		return ret;
+	}
 }

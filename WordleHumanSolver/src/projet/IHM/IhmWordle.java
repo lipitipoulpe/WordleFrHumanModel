@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import projet.Main;
 import projet.Wordle;
 import saveData.Data;
+import saveData.DixData;
 
 import javax.swing.JButton;
 import java.awt.BorderLayout;
@@ -30,9 +31,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.JTextArea;
 
 public class IhmWordle extends JFrame {
-	private String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	private boolean running = false,
-			guested = false;
+	public static String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	public boolean running = false;
+	private boolean guested = false;
 	private int ntry = 0,nLetter=0;
 	private JTable table;
 	private JTextArea logger;
@@ -40,7 +41,7 @@ public class IhmWordle extends JFrame {
 	public char[][][] tabGues;
 	private String currentWord = "";
 	public Data data;
-
+	public DixData datas;
 	/**
 	 * Create the application.
 	 */
@@ -67,12 +68,12 @@ public class IhmWordle extends JFrame {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		datas = new DixData();
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyDispatcher());
 		setBounds(100, 100, 450, 450);
 		addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-        		if(data!=null)data.save();
                 System.exit(0);
             }
         });
@@ -161,7 +162,7 @@ public class IhmWordle extends JFrame {
 		currentWord = temp;
 	}
 
-	protected void addletter(char keyText) {
+	public void addletter(char keyText) {
 		if(nLetter<5) {
 			tabGues[ntry][nLetter][0] = keyText;
 			nLetter++;
@@ -175,8 +176,7 @@ public class IhmWordle extends JFrame {
 
 	protected void enter() {
 		if(nLetter==5) {
-			data.validateWord(currentWord);
-			log(currentWord+"<==");
+			log(currentWord+" gues");
 			guested=true;
 		} else { log("il faut 5 lettres pour valider!");}
 	}
@@ -240,13 +240,12 @@ public class IhmWordle extends JFrame {
 			setText(tabGues[row][column][0]+"");
 			setOpaque(true);
 			this.setHorizontalAlignment(JLabel.CENTER);
-			switch(tabGues[row][column][1]) {
-				case Wordle.DEFAULT -> setBackground(Color.LIGHT_GRAY);
-				case Wordle.VERT -> setBackground(Color.GREEN);
-				case Wordle.JAUNE -> setBackground(Color.YELLOW);
-				case Wordle.GRIS -> setBackground(Color.GRAY);
-				default -> setBackground(Color.DARK_GRAY);
-			}
+			Character c = tabGues[row][column][1];
+			if(c.equals(Wordle.DEFAULT)) setBackground(Color.LIGHT_GRAY);
+			else if(c.equals(Wordle.VERT)) setBackground(Color.GREEN);
+			else if(c.equals(Wordle.JAUNE)) setBackground(Color.YELLOW);
+			else if(c.equals(Wordle.GRIS)) setBackground(Color.GRAY);
+			else setBackground(Color.DARK_GRAY);
 			return this;
 		}
 	}

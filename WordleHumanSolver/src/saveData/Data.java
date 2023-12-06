@@ -1,9 +1,7 @@
 package saveData;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,12 +12,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public record Data(AtomicBoolean type, AtomicBoolean isEnd,List<String> words,List<String> validateWords,AtomicInteger ntry,AtomicReference<String> goodWord){
+public record Data(AtomicBoolean type, AtomicBoolean isEnd,List<String> words,List<String> validateWords,AtomicInteger ntry,AtomicReference<String> goodWord, List<List<List<String>>> tab){
 	//type : 0 = human, 1 = modele
 	//isEnd //partie finie ou non
-
+	//tab : ntry,nLettre,0 lettre/1 couleur
 	public Data(boolean type) {
-		this(new AtomicBoolean(type),new AtomicBoolean(false),new ArrayList<>(),new ArrayList<>(),new AtomicInteger(0),new AtomicReference<String>());
+		this(new AtomicBoolean(type),new AtomicBoolean(false),new ArrayList<>(),new ArrayList<>(),new AtomicInteger(0),new AtomicReference<String>(), new ArrayList<>());
+	}
+	public Data(Data d, List<List<List<String>>> t) {
+		this(d.type,d.isEnd,d.words,d.validateWords,d.ntry,d.goodWord, t);
 	}
 	public void setGoodWord(String gw) {
 		goodWord.set(gw);
@@ -35,15 +36,4 @@ public record Data(AtomicBoolean type, AtomicBoolean isEnd,List<String> words,Li
 	public void setEnd() {
 		isEnd.set(true);
 	}
-	public void save() {
-        ObjectMapper mapper = new ObjectMapper();
-    	String name = Date.from(Instant.now()).toString().replaceAll(" ", "_").replaceAll(":","_")+".json";
-		File f = new File("datas\\"+name);
-        try {
-			mapper.writeValue(f, this);
-			System.out.println("Serialized data is saved in /data/"+name);
-        } catch (IOException e) {
-            System.out.println("Impossible de sauvegarder le fichier " + f.getAbsolutePath());
-        }
-    }
 }
