@@ -1,198 +1,156 @@
 package projet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import projet.IHM.IhmWordle;
-
-import java.text.Normalizer;
-
+import saveData.Data;
 
 public abstract class Wordle {
-
-    // Declaring variables and arrayLists
-    static List<String> languagePossibilities = new ArrayList<>(Arrays.asList("a", "english", "b", "español"));
-    protected String chosenWord;
-    protected String chosenWordWithoutAccents;
-    protected List<String> chosenWordListWithoutAccents;
-    protected List<String> chosenWordList;
-    protected List<String> userWordListWithoutAccents;
-    protected List<Character> greenLetters = new ArrayList<>();
-    protected List<Character> yellowLetters = new ArrayList<>();
-    protected List<Character> greyLetters = new ArrayList<>();
-    protected String result;
-    protected String youWonMessage;
-    protected String youLostMessage;
+	protected String chosenWord;
+	protected List<String> chosenWordList;
+	protected List<String> wordList;
+	public void setChosenWordList(List<String> s) {
+		chosenWordList = s;
+	}
 	private IhmWordle ihm;
 
-    // Declaring the background colors
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_GREEN_BACKGROUND = "\u001B[42m";
-    public static final String ANSI_YELLOW_BACKGROUND = "\u001B[43m";
-    public static final String ANSI_GREY_BACKGROUND = "\u001B[100m";
+	// Declaring the background colors
+	public static final Character GRIS = 'G';
+	public static final Character VERT = 'V';
+	public static final Character JAUNE = 'J';
+	public static final Character DEFAULT = ' ';
 
-    // Constructor
-    public Wordle() {
-    	ihm = Main.getMain().getIHM();
-    }
-
-    // METHODS
-
-    // Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
-    public List<String> readDictionary() {
-        List<String> wordList = new ArrayList<>();
-        for(WordInfo w : Main.getMain().getWords())
-        {
-        	wordList.add(w.word()); 
-        }
-        /*try {
-            // Open and read the dictionary file
-            InputStream in = this.getClass().getClassLoader().getResourceAsStream(fileName);
-            assert in != null;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            String strLine;
-
-            //Read file line By line
-            while ((strLine = reader.readLine()) != null) {
-                wordList.add(strLine);
-            }
-            //Close the input stream
-            in.close();
-
-        } catch (Exception e) {//Catch exception if any
-            System.err.println("Error: " + e.getMessage());
-        }*/
-        return wordList;
-    }
-    private List<String> readDictionaryWithoutAccents() {
-    	List<String> wordList = readDictionary();
-    	 for(String s : wordList){
-    		 wordList.set(wordList.indexOf(s), s.replaceAll("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e").replace("à", "a").replace("ï", "i").replace("î", "i"));
-    	 }
-    	 return wordList;
+	// Constructor
+	public Wordle() {
+		wordList = readDictionary();
+		ihm = Main.getMain().getIHM();
 	}
 
-    // Get a random word from the dictionary arraylist
-    public String getRandomWord(List<String> wordList) {
-        Random rand = new Random(); //instance of random class
-        int upperbound = wordList.size();
-        // generate random values from 0 to arrayList size
-        int int_random = rand.nextInt(upperbound);
-        return wordList.get(int_random);
-    }
+	// METHODS
+	// Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
+	public static List<String> readDictionary() {
+		List<String> wordList = new ArrayList<>();
+		for(WordInfo w : Main.getWordsInfo())
+		{
+			if(w.freqfilms2()>0.05f)wordList.add(w.word().toUpperCase()); 
+		}
+		return wordList;
+	}
 
-    public String removeAccents(String str) {
-        return Normalizer.normalize(str, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
-    }
+	// Get a random word from the dictionary arraylist
+	public String getRandomWord() {
+		return chosenWordList.get(new Random().nextInt(chosenWordList.size()));
+	}
+	private String getRandomWord10() {
+		String s = chosenWordList.get(new Random().nextInt(chosenWordList.size()));
+		chosenWordList.remove(s);
+		return s;
+	}
 
-    // print instructions
-    //public abstract void printInstructions();
+	public String removeAccents(String str) {
+		return str.replaceAll("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e").replace("à", "a").replace("ï", "i").replace("î", "i").replace("ô", "o");
+	}
 
-    // ask for first guess
-    //public abstract void askForFirstGuess();
+	// ask the user for a word, check for validity
+	public abstract String obtainValidUserWord (int index);
 
+	public void loopThroughSixGuesses() {
+		ihm.running=true;
+		for (int j = 0; j < 5;j++) {
+			ihm.setTry(j);
+			Main.getMain().getIHM().validate();
+			Main.getMain().getIHM().repaint();
+			String userWord = obtainValidUserWord(j);
+			Main.getMain().getIHM().data.validateWord(userWord);
+			// check for green/yellow/grey letters
+			Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
+			for (int i = 0; i < 5; i++) {
+				fLettre.putIfAbsent(userWord.charAt(i), 0);
+				if (userWord.charAt(i) == chosenWord.charAt(i)) {
+					ihm.tabGues[j][i][1] = VERT;
+					fLettre.put(userWord.charAt(i), fLettre.get(userWord.charAt(i))+1);
+				}
+			}
+			for (int i = 0; i < 5; i++) {
+				if (ihm.tabGues[j][i][1]!=VERT && freqOfChar(chosenWord,userWord.charAt(i))>fLettre.get(userWord.charAt(i))){
+					fLettre.put(userWord.charAt(i), fLettre.get(userWord.charAt(i))+1);
+					ihm.tabGues[j][i][1] = JAUNE;
+				} else if(ihm.tabGues[j][i][1]!=VERT) {
+					ihm.tabGues[j][i][1] = GRIS;
+				}
+			}
+			Main.getMain().getIHM().validate();
+			Main.getMain().getIHM().repaint();
+			if(checkEqual(userWord,chosenWord)) {
+				ihm.end(true, chosenWord);
+				break;
+			}
+			if (j == 4) {
+				ihm.end(false, chosenWord);
+			}
+		}
+	}
+	private boolean checkEqual(String u, String c) {
+		if(u.length()!=c.length())return false;
+		for (int i = 0; i < u.length(); i++) {
+			if(u.charAt(i)!=c.charAt(i))
+				return false;
+		}
+		return true;
+	}
+	protected boolean checkContains(List<String> l, String w) {
+		for(String s : l) {
+			if(s.equals(w))
+				return true;
+		}
+		return false;
+	}
+	private int freqOfChar(String chosenWordWithoutAccents2, char charAt) {
+		int ret = 0;
+		for(char c : chosenWordWithoutAccents2.toCharArray()) {
+			if(c==charAt)ret++;
+		}
+		return ret;
+	}
 
-    // ask the user for a word, check for validity
-    public abstract String obtainValidUserWord (List<String> wordList, int index);
+	// play method that calls on all other methods.
+	public void play () {
+		// Selecting a random word from the dictionary
+		chosenWordList = readDictionary();
+		chosenWord = getRandomWord();
+		ihm.data.setGoodWord(chosenWord);
+		this.loopThroughSixGuesses();
+	}
+	public void play10(List<String> chosenWords) {
+		// Selecting a random word from the dictionary
+		chosenWordList = new ArrayList<String>(chosenWords);
+		for (int i = 0; i < 10; i++) {
+			ihm.clear();
+			chosenWord = getRandomWord10();
+			ihm.data.setGoodWord(chosenWord);
+			this.loopThroughSixGuesses();
+			if(ihm.data!=null)ihm.datas.addData(new Data(ihm.data,getAsList(ihm.tabGues)));
+		}
+		ihm.datas.save();
+	}
 
-    // method that replaces a char in a string at a specific index
-    public String replaceChar(String str, char ch, int index) {
-        char[] chars = str.toCharArray();
-        chars[index] = ch;
-        return String.valueOf(chars);
-    }
-
-    // print definition
-    //public abstract void printDefinitionLink (String randomChosenWord);
-
-    public void loopThroughSixGuesses(List<String> wordList) {
-
-        for (int j = 0; j < 6; j++) {
-        	ihm.setTry(j+1);//System.out.print("--> " + (j + 1) + ") ");
-            String userWord = obtainValidUserWord(wordList, j);
-            String chosenWordWithoutGreensAndYellows = chosenWordWithoutAccents;
-            // check if the user won: the userWord is the same as chosenWord
-            String userWordWithoutGreensAndYellows = userWord;
-            String[] positionColors = new String[5];
-
-            // check for green letters
-            for (int i = 0; i < 5; i++) {
-                if (userWord.charAt(i) == chosenWord.charAt(i)) {
-                    userWordWithoutGreensAndYellows = replaceChar(userWordWithoutGreensAndYellows, '0', i);
-                    chosenWordWithoutGreensAndYellows = replaceChar(chosenWordWithoutGreensAndYellows, '0', i);
-                    // System.out.print(ANSI_GREEN_BACKGROUND + userWord.toUpperCase().charAt(i) + ANSI_RESET);
-                    greenLetters.add(userWord.toUpperCase().charAt(i));
-                    positionColors[i] = ANSI_GREEN_BACKGROUND;
-                }
-            }
-
-            // check for yellow letters
-            for (int i = 0; i < 5; i++) {
-                if (userWordWithoutGreensAndYellows.charAt(i) == '0') {
-
-                } else if (chosenWordWithoutGreensAndYellows.indexOf(userWordWithoutGreensAndYellows.charAt(i)) != -1) {
-                    chosenWordWithoutGreensAndYellows = replaceChar(chosenWordWithoutGreensAndYellows, '0', chosenWordWithoutGreensAndYellows.indexOf(userWordWithoutGreensAndYellows.charAt(i)));
-                    userWordWithoutGreensAndYellows = replaceChar(userWordWithoutGreensAndYellows, '0', i);
-                    yellowLetters.add(userWord.toUpperCase().charAt(i));
-                    positionColors[i] = ANSI_YELLOW_BACKGROUND;
-                } else {
-                    greyLetters.add(userWord.toUpperCase().charAt(i));
-                    positionColors[i] = ANSI_GREY_BACKGROUND;
-                }
-            }
-            if (userWord.equals(chosenWordWithoutAccents)) {
-                ihm.end(true, chosenWord);
-                break;
-            } else {
-                System.out.print(result);
-                // Loop checking every letter
-
-                // print user word with colors
-                for (int i = 0; i < 5; i++) {
-                    System.out.print(positionColors[i] + userWord.toUpperCase().charAt(i) + ANSI_RESET);
-                }
-                System.out.println();
-
-            }
-            // print alphabet
-            //TODO in ihm printingColouredAlphabet(greenLetters, yellowLetters, greyLetters);
-
-            // Losing statement
-            System.out.println();
-            if (j == 5) {
-                ihm.end(false, chosenWord);
-            }
-        }
-    }
-
-
-    // printing the alphabet including the colors for a visual exposition of information
-    //public abstract void printingColouredAlphabet(List<Character> greenLetters, List<Character> yellowLetters, List<Character> greyLetters);
-
-    // play method that calls on all other methods.
-    public void play () {
-        // Open and read the dictionary file with accents and without
-        chosenWordList = this.readDictionary();
-        chosenWordListWithoutAccents = this.readDictionaryWithoutAccents();
-        userWordListWithoutAccents = this.readDictionary();
-
-        // Selecting a random word from the dictionary
-        chosenWord = getRandomWord(chosenWordList);
-
-        // remove the accents from the word, if any
-        chosenWordWithoutAccents = removeAccents(chosenWord);
-
-        // Instructions to the game
-//TODO in log        this.printInstructions();
-
-        // ask the user for the first guess
-//        this.askForFirstGuess();
-
-        this.loopThroughSixGuesses(userWordListWithoutAccents);
-
-    }
-
-	
-
-
-
+	//tab : ntry,nLettre,0 lettre/1 couleur
+	private List<List<List<String>>> getAsList(char[][][] tabGues) {
+		List<List<List<String>>> ret = new ArrayList<>();
+		for (int ntry = 0; ntry < 5; ntry++) {
+			List<List<String>> sub1 = new ArrayList<>();
+			for (int nLettre = 0; nLettre < 5; nLettre++) {
+				List<String> sub2 = new ArrayList<>();
+				sub2.add(tabGues[ntry][nLettre][0]+"");
+				sub2.add(tabGues[ntry][nLettre][1]+"");
+				sub1.add(sub2);
+			}
+			ret.add(sub1);
+		}
+		return ret;
+	}
 }
