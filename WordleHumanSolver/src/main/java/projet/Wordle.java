@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Random;
 
 import projet.IHM.IhmWordle;
-import saveData.Data;
+import projet.IHM.IhmWordleApplet;
+import projet.IHM.MainApplet;
+import projet.saveData.Data;
 
 public abstract class Wordle {
 	protected String chosenWord;
@@ -16,7 +18,7 @@ public abstract class Wordle {
 	public void setChosenWordList(List<String> s) {
 		chosenWordList = s;
 	}
-	private IhmWordle ihm;
+	private IhmWordleApplet ihm;
 
 	// Declaring the background colors
 	public static final Character GRIS = 'G';
@@ -27,16 +29,16 @@ public abstract class Wordle {
 	// Constructor
 	public Wordle() {
 		wordList = readDictionary();
-		ihm = Main.getMain().getIHM();
+		ihm = MainApplet.getMain().getIHM();
 	}
 
 	// METHODS
 	// Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
 	public static List<String> readDictionary() {
 		List<String> wordList = new ArrayList<>();
-		for(WordInfo w : Main.getWordsInfo())
+		for(WordInfo w : MainApplet.getWordsInfo())
 		{
-			if(w.freqfilms2()>0.05f)wordList.add(w.word().toUpperCase()); 
+			wordList.add(w.word().toUpperCase()); 
 		}
 		return wordList;
 	}
@@ -51,10 +53,6 @@ public abstract class Wordle {
 		return s;
 	}
 
-	public String removeAccents(String str) {
-		return str.replaceAll("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e").replace("à", "a").replace("ï", "i").replace("î", "i").replace("ô", "o");
-	}
-
 	// ask the user for a word, check for validity
 	public abstract String obtainValidUserWord (int index);
 
@@ -65,7 +63,7 @@ public abstract class Wordle {
 			Main.getMain().getIHM().validate();
 			Main.getMain().getIHM().repaint();
 			String userWord = obtainValidUserWord(j);
-			Main.getMain().getIHM().data.validateWord(userWord);
+			MainApplet.getMain().getIHM().data.validateWord(userWord);
 			// check for green/yellow/grey letters
 			Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
 			for (int i = 0; i < 5; i++) {
@@ -83,8 +81,8 @@ public abstract class Wordle {
 					ihm.tabGues[j][i][1] = GRIS;
 				}
 			}
-			Main.getMain().getIHM().validate();
-			Main.getMain().getIHM().repaint();
+			MainApplet.getMain().getIHM().validate();
+			MainApplet.getMain().getIHM().repaint();
 			if(checkEqual(userWord,chosenWord)) {
 				ihm.end(true, chosenWord);
 				break;
@@ -135,6 +133,7 @@ public abstract class Wordle {
 			this.loopThroughSixGuesses();
 			if(ihm.data!=null)ihm.datas.addData(new Data(ihm.data,getAsList(ihm.tabGues)));
 		}
+		ihm.log("partie terminée, merci d'avoir participé");
 		ihm.datas.save();
 	}
 

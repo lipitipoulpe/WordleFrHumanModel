@@ -3,13 +3,13 @@ package projet;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import projet.IHM.IhmWordle;
-import saveData.DixData;
+import projet.saveData.DixData;
 
 public class Main {
 	private static Main main;
@@ -31,11 +31,8 @@ public class Main {
 			@Override
 			public void run() {
 				ihm.clear();
-				ihm.log((mode?"human":"modele")+" start game");
-				if(mode)
-					new Francais().play10(chosenWords);
-				else
-					new ModeleFrancais().play10(chosenWords);
+				ihm.log("human start game");
+				new Francais().play10(chosenWords);
 			}
 		};
 		EventQueue.invokeLater(new Runnable() {
@@ -52,8 +49,8 @@ public class Main {
     public static final List<WordInfo> wordsInfo = new ArrayList<>();
 
     public static void loadWords() {
-		try (
-			BufferedReader br = new BufferedReader(new FileReader("motsFR.csv"))) {
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream("/motsFR.csv")));
 		    String line = br.readLine();
 		    while ((line = br.readLine()) != null) {
 		        String[] values = line.split(",");
@@ -78,10 +75,7 @@ public class Main {
 				ihm.datas = new DixData();
 				ihm.clear();
 				ihm.log("game start");
-				if(mode)
-					new Francais().play10(Main.chosenWords);
-				else
-					new ModeleFrancais().play10(Main.chosenWords);
+				new Francais().play10(Main.chosenWords);
 			}
 		};
 		return temp;

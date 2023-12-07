@@ -1,5 +1,7 @@
 package projet;
 
+import projet.IHM.MainApplet;
+
 public class Francais extends Wordle {
     public Francais() {
         super();
@@ -9,10 +11,10 @@ public class Francais extends Wordle {
 	public String obtainValidUserWord(int index) {
 		String gues = " ";
 		while(true) {
-			gues = Main.getMain().getIHM().getGues();
+			gues = MainApplet.getMain().getIHM().getGues();
 			if(wordList.contains(gues)) break;
 			else {
-				Main.getMain().getIHM().resetRow(gues);
+				MainApplet.getMain().getIHM().resetRow(gues);
 			}
 		}
 		

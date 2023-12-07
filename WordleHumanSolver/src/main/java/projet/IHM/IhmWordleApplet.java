@@ -3,17 +3,15 @@ package projet.IHM;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import projet.Main;
 import projet.Wordle;
-import saveData.Data;
-import saveData.DixData;
+import projet.saveData.Data;
+import projet.saveData.DixData;
 
+import javax.swing.JApplet;
 import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,13 +22,17 @@ import java.awt.KeyboardFocusManager;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.JTextArea;
 
-public class IhmWordle extends JFrame {
+@SuppressWarnings("removal")
+public class IhmWordleApplet extends JApplet{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8441123529036685445L;
 	public static String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public boolean running = false;
 	private boolean guested = false;
@@ -45,12 +47,12 @@ public class IhmWordle extends JFrame {
 	/**
 	 * Create the application.
 	 */
-	public IhmWordle() { initialize(); }
+	public IhmWordleApplet() { initialize(); }
 
 	private class MyDispatcher implements KeyEventDispatcher {
 		@Override
 		public boolean dispatchKeyEvent(KeyEvent e) {
-			if(IhmWordle.this.isFocused() && running) {
+			if(IhmWordleApplet.this.isFocusOwner() && running) {
 				if (e.getID() == KeyEvent.KEY_RELEASED) {
 					if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
 						backspace();
@@ -67,60 +69,35 @@ public class IhmWordle extends JFrame {
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	@SuppressWarnings("deprecation")
 	private void initialize() {
 		datas = new DixData();
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new MyDispatcher());
 		setBounds(100, 100, 450, 450);
-		addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                System.exit(0);
-            }
-        });
 		getRootPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel topPanel = new JPanel();
 		getRootPane().add(topPanel, BorderLayout.NORTH);
 
-		JSplitPane splitPane = new JSplitPane();
-		topPanel.add(splitPane);
 		JButton startHuman = new JButton("startHuman");
 		startHuman.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(running && askBoolConfirm("restart as humain?")) {
 					try { 
-						Main.getMain().getGameTask().stop();
-						Main.getMain().getGameTask().join();
+						MainApplet.getMain().getGameTask().stop();
+						MainApplet.getMain().getGameTask().join();
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}
 				} else if(running) return;
-				Main.getMain().mode = true;
+				MainApplet.getMain().mode = true;
 				running = true;
-				Main.getMain().resetGameTask().start();
+				MainApplet.getMain().resetGameTask().start();
 			}
 		});
-		splitPane.setLeftComponent(startHuman);
-		JButton startModele = new JButton("startModele");
-		startModele.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(running && askBoolConfirm("restart as modele?")) {
-					try { 
-						Main.getMain().getGameTask().stop();
-						Main.getMain().getGameTask().join();
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
-				} else if(running) return;
-				Main.getMain().mode = false;
-				running = true;
-				Main.getMain().resetGameTask().start();
-			}
-		});
-		splitPane.setRightComponent(startModele);
-
+		topPanel.add(startHuman);
+		
 		initTable();
 		table.setRowSelectionAllowed(false);
 		table.repaint();
@@ -144,6 +121,11 @@ public class IhmWordle extends JFrame {
 			}
 		}
 		table = new JTable(5,5){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3219292342230190237L;
+
 			public boolean isCellEditable(int row, int column) {                
 	                return false;               
 	        };
@@ -234,6 +216,11 @@ public class IhmWordle extends JFrame {
 		running=false;
 	}
 	public class CustomRenderer extends JLabel implements TableCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5355456270385935883L;
+
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {

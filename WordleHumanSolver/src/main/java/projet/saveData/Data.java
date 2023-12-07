@@ -1,16 +1,10 @@
-package saveData;
+package projet.saveData;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public record Data(AtomicBoolean type, AtomicBoolean isEnd,List<String> words,List<String> validateWords,AtomicInteger ntry,AtomicReference<String> goodWord, List<List<List<String>>> tab){
 	//type : 0 = human, 1 = modele
