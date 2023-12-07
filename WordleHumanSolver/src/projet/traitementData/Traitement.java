@@ -1,8 +1,7 @@
-package traitementData;
+package projet.traitementData;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,17 +16,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import projet.Main;
 import projet.Wordle;
-import saveData.Data;
-import saveData.DixData;
+import projet.saveData.Data;
+import projet.saveData.DixData;
 
 public class Traitement {
 	private static BufferedWriter brValMotH,brValMotM,brFreqLettreH,brFreqLettreM;
 	
 	static{
 		try {
-//			brValMotH = new BufferedWriter(new FileWriter("valeurMotHumain.csv"));
+			brValMotH = new BufferedWriter(new FileWriter("valeurMotHumain.csv"));
 			brValMotM = new BufferedWriter(new FileWriter("valeurMotModele.csv"));
-//			brFreqLettreH = new BufferedWriter(new FileWriter("frequenceLettreHumain.csv"));
+			brFreqLettreH = new BufferedWriter(new FileWriter("frequenceLettreHumain.csv"));
 			brFreqLettreM = new BufferedWriter(new FileWriter("frequenceLettreModele.csv"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -51,24 +50,18 @@ public class Traitement {
 					datas.put(data.goodWord().get(),new ArrayList<>());
 				datas.get(data.goodWord().get()).add(data);				
 			}
+		try {
+			brValMotH.append("mot,nessais,valeurMot");
+			brValMotH.newLine();
+			brValMotM.append("mot,nessais,valeurMot");
+			brValMotM.newLine();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		for (String word : Main.chosenWords) {
 			int nTestH=0,nTestM=0;
-			try {
-//				brValMotH.newLine();
-//				brValMotH.newLine();
-//				brValMotH.append(word);
-//				brValMotH.newLine();
-//				brValMotH.append("nmot,nessais,valeurMot");
-				brValMotM.newLine();
-				brValMotM.newLine();
-				brValMotM.append(word);
-				brValMotM.newLine();
-				brValMotM.append("nmot,nessais,valeurMot");
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
 			float[][][][] freqMot = new float[2][5][5][26];
-			int nh=0,nm=0;
+			float[][] valMot = new float[2][5];//type,ntry
 			Iterator<Data> it = datas.get(word).iterator();
 			while(it.hasNext()) {
 				Data data = it.next();
@@ -76,39 +69,21 @@ public class Traitement {
 					continue;
 				}
 				for (int ntry=0;ntry<data.ntry().get();ntry++) {
-					try {
-						if(!data.type().get()) {
-							brValMotM.newLine();
-							brValMotM.append(nTestM+","+ntry+","+valeurMot(data,ntry));
-						} else {
-//							brValMotH.newLine();
-//							brValMotH.append(nTestH+","+ntry+","+valeurMot(data,ntry));
-						}
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					for(int nLettre=0;nLettre<5;nLettre++) {
-						if(!data.type().get()){
-							//TODO @remove
-							try {
-								freqMot[data.type().get()?1:0][ntry][nLettre][data.tab().get(ntry).get(nLettre).get(0).charAt(0)-'A']+=1;								
-							}catch (Exception e) {
-								e.printStackTrace();
-								System.out.println(data.tab().get(ntry));
-							}
-						}
-					}
+					valMot[data.type().get()?1:0][ntry]+=valeurMot(data,ntry) ; 
+					for(int nLettre=0;nLettre<5;nLettre++)
+						if(!data.type().get())
+							freqMot[data.type().get()?1:0][ntry][nLettre][data.tab().get(ntry).get(nLettre).get(0).charAt(0)-'A']+=1;									
 				}
 				if(data.type().get())nTestH++;
 				else nTestM++;
 			}
 			for (int ntry=0;ntry<5;ntry++) {
+				valMot[0][ntry]/=nTestM;
+				valMot[1][ntry]/=nTestH;
 				for(int nLettre=0;nLettre<5;nLettre++) {
 					for (int i = 0; i < 26; i++) {
 						freqMot[0][ntry][nLettre][i]/=nTestM;
-//						freqMot[1][ntry][nLettre][i]/=nTestH;
+						freqMot[1][ntry][nLettre][i]/=nTestH;
 					}
 				}
 			}
@@ -116,15 +91,15 @@ public class Traitement {
 			for (int ntry=0;ntry<5;ntry++) {
 				for(int nLettre=0;nLettre<5;nLettre++) {
 					topFreqMotString[0][ntry][nLettre] = getTop5(freqMot[0][ntry][nLettre]);
-//					topFreqMotString[1][ntry][nLettre] = getTop5(freqMot[1][ntry][nLettre]);
+					topFreqMotString[1][ntry][nLettre] = getTop5(freqMot[1][ntry][nLettre]);
 				}
 			}
 			try {
-//				brFreqLettreH.newLine();
-//				brFreqLettreH.append(word);
-//				brFreqLettreH.newLine();
-//				brFreqLettreH.append("ntry,Top5,l0,f0,l1,f1,l2,f2,l3,f3,l4,f4");
-//				brFreqLettreH.newLine();
+				brFreqLettreH.newLine();
+				brFreqLettreH.append(word);
+				brFreqLettreH.newLine();
+				brFreqLettreH.append("ntry,Top5,l0,f0,l1,f1,l2,f2,l3,f3,l4,f4");
+				brFreqLettreH.newLine();
 				brFreqLettreM.newLine();
 				brFreqLettreM.append(word);
 				brFreqLettreM.newLine();
@@ -133,27 +108,31 @@ public class Traitement {
 				for (int ntry=0;ntry<5;ntry++){
 					for(int top=0;top<5;top++){
 						brFreqLettreM.append(ntry+","+top);
-//						brFreqLettreH.append(ntry+","+top);
+						brFreqLettreH.append(ntry+","+top);
 						for(int nLettre=0;nLettre<5;nLettre++) {
 							String[][][] currentVal = topFreqMotString[0][ntry];//nLettre,Top5,0 lettre/1 freq
-							brFreqLettreM.append(","+currentVal[nLettre][top][0]+","+currentVal[nLettre][top][0]);
-//							currentVal = topFreqMotString[1][ntry];
-//							brFreqLettreH.append(","+currentVal[nLettre][top][0]+","+currentVal[nLettre][top][0]);
-						}							
+							brFreqLettreM.append(","+currentVal[nLettre][top][0]+","+currentVal[nLettre][top][1]);
+							currentVal = topFreqMotString[1][ntry];
+							brFreqLettreH.append(","+currentVal[nLettre][top][0]+","+currentVal[nLettre][top][1]);
+						}
 						brFreqLettreM.newLine();
-//						brFreqLettreH.newLine();
-					}		
+						brFreqLettreH.newLine();
+					}
 					brFreqLettreM.newLine();
-//					brFreqLettreH.newLine();
+					brFreqLettreH.newLine();
+					brValMotM.append(word+","+ntry+","+valMot[0][ntry]);
+					brValMotM.newLine();
+					brValMotH.append(word+","+ntry+","+valMot[1][ntry]);
+					brValMotH.newLine();
 				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 		}
 		try {
-//			brValMotH.flush();
+			brValMotH.flush();
 			brValMotM.flush();
-//			brFreqLettreH.flush();
+			brFreqLettreH.flush();
 			brFreqLettreM.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -161,7 +140,6 @@ public class Traitement {
 	}
 
 	private static String[][] getTop5(float[] freqMot) {
-		System.out.println(Arrays.toString(freqMot));
 		List<Float> fl = new ArrayList<>(List.of(0f,0f,0f,0f,0f));
 		List<Character> chars = new ArrayList<>();
 		for (int i = 0; i < 26; i++) {
@@ -173,8 +151,6 @@ public class Traitement {
 				}
 			}
 		}
-		System.out.println(fl);
-		System.out.println(chars);
 		String[][] ret = new String[5][2];
 		for (int i = 0; i < 5; i++) {
 			if(i<chars.size()) {

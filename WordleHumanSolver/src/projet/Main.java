@@ -3,13 +3,13 @@ package projet;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import projet.IHM.IhmWordle;
-import saveData.DixData;
+import projet.saveData.DixData;
 
 public class Main {
 	private static Main main;
@@ -52,9 +52,9 @@ public class Main {
     public static final List<WordInfo> wordsInfo = new ArrayList<>();
 
     public static void loadWords() {
-		try (
-			BufferedReader br = new BufferedReader(new FileReader("motsFR.csv"))) {
-		    String line = br.readLine();
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream("/motsFR.csv")));
+			String line = br.readLine();
 		    while ((line = br.readLine()) != null) {
 		        String[] values = line.split(",");
 		        wordsInfo.add(new WordInfo(values[0],values[1],Float.parseFloat(values[2]),Integer.parseInt(values[3]),Integer.parseInt(values[4])));

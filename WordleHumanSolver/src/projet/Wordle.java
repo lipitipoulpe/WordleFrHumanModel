@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Random;
 
 import projet.IHM.IhmWordle;
-import saveData.Data;
+import projet.saveData.Data;
 
 public abstract class Wordle {
 	protected String chosenWord;

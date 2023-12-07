@@ -11,8 +11,8 @@ import javax.swing.JOptionPane;
 
 import projet.Main;
 import projet.Wordle;
-import saveData.Data;
-import saveData.DixData;
+import projet.saveData.Data;
+import projet.saveData.DixData;
 
 import javax.swing.JButton;
 import java.awt.BorderLayout;
