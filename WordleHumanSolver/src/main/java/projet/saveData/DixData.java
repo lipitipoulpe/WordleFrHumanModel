@@ -30,5 +30,4 @@ public record DixData(Data[] datas) {
         	System.out.println("Impossible de sauvegarder le fichier " + f.getAbsolutePath());
         }
     }
-	
 }

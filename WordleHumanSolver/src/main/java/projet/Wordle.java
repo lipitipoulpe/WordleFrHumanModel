@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Random;
 
 import projet.IHM.IhmWordle;
-import projet.IHM.IhmWordleApplet;
-import projet.IHM.MainApplet;
 import projet.saveData.Data;
 
 public abstract class Wordle {
@@ -18,7 +16,7 @@ public abstract class Wordle {
 	public void setChosenWordList(List<String> s) {
 		chosenWordList = s;
 	}
-	private IhmWordleApplet ihm;
+	private IhmWordle ihm;
 
 	// Declaring the background colors
 	public static final Character GRIS = 'G';
@@ -29,14 +27,14 @@ public abstract class Wordle {
 	// Constructor
 	public Wordle() {
 		wordList = readDictionary();
-		ihm = MainApplet.getMain().getIHM();
+		ihm = Main.getMain().getIHM();
 	}
 
 	// METHODS
 	// Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
 	public static List<String> readDictionary() {
 		List<String> wordList = new ArrayList<>();
-		for(WordInfo w : MainApplet.getWordsInfo())
+		for(WordInfo w : Main.getWordsInfo())
 		{
 			wordList.add(w.word().toUpperCase()); 
 		}
@@ -63,7 +61,7 @@ public abstract class Wordle {
 			Main.getMain().getIHM().validate();
 			Main.getMain().getIHM().repaint();
 			String userWord = obtainValidUserWord(j);
-			MainApplet.getMain().getIHM().data.validateWord(userWord);
+			Main.getMain().getIHM().data.validateWord(userWord);
 			// check for green/yellow/grey letters
 			Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
 			for (int i = 0; i < 5; i++) {
@@ -81,8 +79,8 @@ public abstract class Wordle {
 					ihm.tabGues[j][i][1] = GRIS;
 				}
 			}
-			MainApplet.getMain().getIHM().validate();
-			MainApplet.getMain().getIHM().repaint();
+			Main.getMain().getIHM().validate();
+			Main.getMain().getIHM().repaint();
 			if(checkEqual(userWord,chosenWord)) {
 				ihm.end(true, chosenWord);
 				break;
