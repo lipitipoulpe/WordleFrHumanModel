@@ -1,4 +1,4 @@
-package projet;
+package projetApplet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import projet.WordInfo;
 import projet.IHM.IhmWordle;
 import projet.saveData.Data;
 
-public abstract class Wordle {
+public abstract class WordleApplet {
 	protected String chosenWord;
 	protected List<String> chosenWordList;
 	protected List<String> wordList;
@@ -25,16 +26,16 @@ public abstract class Wordle {
 	public static final Character DEFAULT = ' ';
 
 	// Constructor
-	public Wordle() {
+	public WordleApplet() {
 		wordList = readDictionary();
-		ihm = Main.getMain().getIHM();
+		ihm = MainApplet.getMain().getIHM();
 	}
 
 	// METHODS
 	// Read the dictionary and assemble the dictionary arrayList from which to choose the random chosen word
 	public static List<String> readDictionary() {
 		List<String> wordList = new ArrayList<>();
-		for(WordInfo w : Main.getWordsInfo())
+		for(WordInfo w : MainApplet.getWordsInfo())
 		{
 			wordList.add(w.word().toUpperCase()); 
 		}
@@ -54,15 +55,14 @@ public abstract class Wordle {
 	// ask the user for a word, check for validity
 	public abstract String obtainValidUserWord (int index);
 
-	public void loopThroughSixGuesses(int nmot) {
+	public void loopThroughSixGuesses() {
 		ihm.running=true;
 		for (int j = 0; j < 5;j++) {
-			ihm.log("mot n°"+nmot+"/10, essais n°"+(j+1)+"/5");
 			ihm.setTry(j);
-			Main.getMain().getIHM().validate();
-			Main.getMain().getIHM().repaint();
+			MainApplet.getMain().getIHM().validate();
+			MainApplet.getMain().getIHM().repaint();
 			String userWord = obtainValidUserWord(j);
-			Main.getMain().getIHM().data.validateWord(userWord);
+			MainApplet.getMain().getIHM().data.validateWord(userWord);
 			// check for green/yellow/grey letters
 			Map<Character,Integer> fLettre = new HashMap<Character, Integer>();
 			for (int i = 0; i < 5; i++) {
@@ -80,8 +80,8 @@ public abstract class Wordle {
 					ihm.tabGues[j][i][1] = GRIS;
 				}
 			}
-			Main.getMain().getIHM().validate();
-			Main.getMain().getIHM().repaint();
+			MainApplet.getMain().getIHM().validate();
+			MainApplet.getMain().getIHM().repaint();
 			if(checkEqual(userWord,chosenWord)) {
 				ihm.end(true, chosenWord);
 				break;
@@ -113,7 +113,15 @@ public abstract class Wordle {
 		}
 		return ret;
 	}
-	
+
+	// play method that calls on all other methods.
+	public void play () {
+		// Selecting a random word from the dictionary
+		chosenWordList = readDictionary();
+		chosenWord = getRandomWord();
+		ihm.data.setGoodWord(chosenWord);
+		this.loopThroughSixGuesses();
+	}
 	public void play10(List<String> chosenWords) {
 		// Selecting a random word from the dictionary
 		chosenWordList = new ArrayList<String>(chosenWords);
@@ -121,7 +129,7 @@ public abstract class Wordle {
 			ihm.clear();
 			chosenWord = getRandomWord10();
 			ihm.data.setGoodWord(chosenWord);
-			this.loopThroughSixGuesses(i+1);
+			this.loopThroughSixGuesses();
 			if(ihm.data!=null)ihm.datas.addData(new Data(ihm.data,getAsList(ihm.tabGues)));
 		}
 		ihm.log("partie terminée, merci d'avoir participé");

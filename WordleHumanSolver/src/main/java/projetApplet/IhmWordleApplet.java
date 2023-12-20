@@ -1,4 +1,4 @@
-package projet.IHM;
+package projetApplet;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,9 +29,11 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.JTextArea;
 
-public class IhmWordle extends JFrame {
+public class IhmWordleApplet extends JFrame {
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 8441123529036685445L;
-	
 	public static String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public boolean running = false;
 	private boolean guested = false;
@@ -46,12 +48,12 @@ public class IhmWordle extends JFrame {
 	/**
 	 * Create the application.
 	 */
-	public IhmWordle() { initialize(); }
+	public IhmWordleApplet() { initialize(); }
 
 	private class MyDispatcher implements KeyEventDispatcher {
 		@Override
 		public boolean dispatchKeyEvent(KeyEvent e) {
-			if(IhmWordle.this.isFocused() && running) {
+			if(IhmWordleApplet.this.isFocused() && running) {
 				if (e.getID() == KeyEvent.KEY_RELEASED) {
 					if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE)
 						backspace();
@@ -83,22 +85,22 @@ public class IhmWordle extends JFrame {
 		JPanel topPanel = new JPanel();
 		getRootPane().add(topPanel, BorderLayout.NORTH);
 
-		JButton startHuman = new JButton("jouer");
+		JButton startHuman = new JButton("demarrer");
 		startHuman.addActionListener(new ActionListener() {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(running && askBoolConfirm("rejouer comme humain?")) {
+				if(running && askBoolConfirm("recommencer?")) {
 					try { 
-						Main.getMain().getGameTask().stop();
-						Main.getMain().getGameTask().join();
+						MainApplet.getMain().getGameTask().stop();
+						MainApplet.getMain().getGameTask().join();
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}
 				} else if(running) return;
-				Main.getMain().mode = true;
+				MainApplet.getMain().mode = true;
 				running = true;
-				Main.getMain().resetGameTask().start();
+				MainApplet.getMain().resetGameTask().start();
 			}
 		});
 		topPanel.add(startHuman);
@@ -108,7 +110,7 @@ public class IhmWordle extends JFrame {
 		table.repaint();
 		
 		getRootPane().add(table, BorderLayout.CENTER);
-		logger = new JTextArea("initialisation");
+		logger = new JTextArea("start");
 		JScrollPane jsp= new JScrollPane(
 				logger,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,    //La barre verticale toujours visible
@@ -163,7 +165,7 @@ public class IhmWordle extends JFrame {
 
 	protected void enter() {
 		if(nLetter==5) {
-			log("\""+currentWord+"\" testé");
+			log(currentWord+" gues");
 			guested=true;
 		} else { log("il faut 5 lettres pour valider!");}
 	}
@@ -188,7 +190,7 @@ public class IhmWordle extends JFrame {
 	}
 
 	public void clear() {
-		data = new Data(Main.getMain().mode);
+		data = new Data(MainApplet.getMain().mode);
 		initTable();
 	}
 
@@ -207,7 +209,7 @@ public class IhmWordle extends JFrame {
 		}
 		guested = false;
 		String temp = currentWord;
-		System.out.println("mot testé : " + temp);
+		System.out.println("guess : " + temp);
 		return temp;
 	}
 
@@ -216,7 +218,7 @@ public class IhmWordle extends JFrame {
 		nLetter = 0;
 	}
 	public void end(boolean win,String correctWord) {
-		log(win?"Victoire!":("Perdu, le mot était \""+correctWord+"\""));
+		log(win?"Victoire!":("Perdu, le mot était "+correctWord));
 		data.setEnd();
 		running=false;
 	}

@@ -1,41 +1,46 @@
-package projet;
+package projetApplet;
 
+import java.applet.Applet;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import javax.swing.JApplet;
+
+import projet.Francais;
+import projet.Main;
+import projet.WordInfo;
 import projet.IHM.IhmWordle;
 import projet.saveData.DixData;
 
-public class Main {
-	private static Main main;
+public class MainApplet extends Applet{
+	private static final long serialVersionUID = 1L;
 	
-	public static Main getMain() { return main; }
+	private static MainApplet main;
+	public static MainApplet getMain() { return main; }
 	private IhmWordle ihm;
-	
 	public IhmWordle getIHM() { return ihm; }
 	private Thread gameTask;
 	public Thread getGameTask() { return gameTask; }
 	public boolean mode = true;//mode true = humain / false = modele
-	public static final List<String> chosenWords = Arrays.stream(new String[]{"VENEZ","CARNE","RAMPE","LEGOS","TASSE","FIXER","NAZES","TIRES","SALTO","ELEVE"}).collect(Collectors.toList());
+	public static final List<String> chosenWords = new ArrayList<>(List.of(new String[]{"VENEZ","CARNE","RAMPE","LEGOS","TASSE","FIXER","NAZES","TIRES","SALTO","ELEVE"}));
 	
     public static void main(String[] args) {
-    	new Main();
+    	MainApplet ma = new MainApplet();
+    	ma.setVisible(true);
     }
-    public Main() {
+    public void init() {
 		main = this;
 		loadWords();
 		gameTask = new Thread() {
 			@Override
 			public void run() {
 				ihm.clear();
-				ihm.log("un humain commence la partie");
+				ihm.log("human start game");
 				new Francais().play10(chosenWords);
 			}
 		};
@@ -43,6 +48,7 @@ public class Main {
 			public void run() {
 				try {
 					ihm = new IhmWordle();
+					add(ihm.getContentPane());
 					ihm.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -54,7 +60,7 @@ public class Main {
 
     public static void loadWords() {
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream("/motsFR.csv")));
+			BufferedReader br = new BufferedReader(new InputStreamReader(MainApplet.class.getResourceAsStream("/motsFR.csv")));
 		    String line = br.readLine();
 		    while ((line = br.readLine()) != null) {
 		        String[] values = line.split(",");
@@ -78,8 +84,8 @@ public class Main {
 			public void run() {
 				ihm.datas = new DixData();
 				ihm.clear();
-				ihm.log("la partie commence");
-				new Francais().play10(Main.chosenWords);
+				ihm.log("game start");
+				new Francais().play10(MainApplet.chosenWords);
 			}
 		};
 		return temp;
