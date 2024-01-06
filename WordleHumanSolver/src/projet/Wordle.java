@@ -46,6 +46,7 @@ public abstract class Wordle {
 		return chosenWordList.get(new Random().nextInt(chosenWordList.size()));
 	}
 	private String getRandomWord10() {
+		
 		String s = chosenWordList.get(new Random().nextInt(chosenWordList.size()));
 		chosenWordList.remove(s);
 		return s;
