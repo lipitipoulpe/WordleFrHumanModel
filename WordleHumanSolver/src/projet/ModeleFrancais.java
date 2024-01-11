@@ -6,8 +6,7 @@ import java.util.Random;
 
 public class ModeleFrancais extends Wordle{	
 
-	/**un tableau où seront stockés les lettres vertes à l'endroit et au tour où 
-	elles sont trouvées et les tours suivants
+	/**un tableau où seront stockés les lettres vertes à l'endroit et au tour où elles sont trouvées et les tours suivants
 	 */
 	private char[][] lettresVertes;
 	/**un tableau où seront stockés les lettres jaunes à l'endroit et au tour où elles sont trouvées*/
@@ -29,8 +28,7 @@ public class ModeleFrancais extends Wordle{
 	//le disctionnaire des mots
 	String[] dic ;
 	/**
-	 * Un tableau a trois dimmension 5*5*2 qui stocke les résultats l'information 
-	 * reçue sur les lettre dans les mots
+	 * Un tableau a trois dimmension 5*5*2 qui stocke les résultats l'information reçue sur les lettre dans les mots
 	 * 5 tours de jeu
 	 * 5 position possible pour une lettre dans le mot
 	 * 2 pour la lettre stocké et l'information sur cette lettre
@@ -44,31 +42,27 @@ public class ModeleFrancais extends Wordle{
 	//une constantes qui représente la quantité de voyelle désirées dans les mots proposées au tours 1 et deux
 	private static int nbVoyellesMotDepart = 3;
 	//le nombre de mots différent testés tolérés par tours 
-	//(au premier tour la valeur est un car seul le mot validé sera compté comme testé)
+	//(au premier tour la valeur est 1 car seul le mot validé sera compté comme testé)
 	private static int[] tolerenceDuTour = new int[] {1,20,15,15,30};
 	//le nombre de conditions nécéssaire à chaque tour pour que le mot soit validé
 	//(les conditions sont pondérées)
 	private static int[] ConditionsNecessaireDuTour = new int[] {2,15,7,7,7};
-	// seuil de conditions validées a partir du quel un mot un mot est considéré
-	// comme ayant été "pensé" par le modèle et donc comptant pour la tolerance
+	// seuil de conditions validées a partir du quel un mot un mot est considéré comme ayant été "pensé" par le modèle et donc comptant pour la tolerance
 	private static int[] seuilDeTolerenceDuTour = new int[] {3,12,5,5,5};
 
 
 	public ModeleFrancais() {
-		// méthode qui initialise les tableaux qui contienent les information sur les lettres
+		// méthode qui initialise les tableaux qui contienent les informations sur les lettres
 		initialiseInfoLettre();
 		iteration=0;
 
 		rng = new Random();
 
-		//on met le dictionnaire que l'on récupère sous forme de List<String> 
-		//dans un tableau pour pouvoir profiter de l'adressage direct
+		//on met le dictionnaire que l'on récupère sous forme de List<String> dans un tableau pour pouvoir profiter de l'adressage direct
 		dic= new String[4948];
 		dic =  readDictionary().toArray(dic);
 
 		seedNouveauMot = rng.nextInt(dic.length);
-
-
 	}
 
 
@@ -81,8 +75,7 @@ public class ModeleFrancais extends Wordle{
 	public String obtainValidUserWord(int index) {
 
 
-		//si ce n'est pas le premier tour on met à jour les infomrations dont 
-		//on dispose sur les lettre (gris, jaune, vert)
+		//si ce n'est pas le premier tour on met à jour les infomrations dont on dispose sur les lettre (gris, jaune, vert)
 		if(index>0){
 			mettreInfoLettreAJour(index-1);
 			}else {
@@ -90,8 +83,7 @@ public class ModeleFrancais extends Wordle{
 			}
 
 
-		//avant de cherhcer un nouveau mot on rafraichit le point de départ dans 
-		//le dictionnaire et on remet d'indexe de récherche (iteration) à 0
+		//avant de cherhcer un nouveau mot on rafraichit le point de départ dans le dictionnaire et on remet d'indexe de récherche (iteration) à 0
 		seedNouveauMot = rng.nextInt(readDictionary().size());
 		iteration=0;
 
@@ -102,8 +94,7 @@ public class ModeleFrancais extends Wordle{
 		//variables pour stocker le mot en train d'être évalué et le nombre de variables qu'il rempli
 		String test;
 		int conditionsRemplies;
-		//variable pour stocker le nombre de mots qui ont été "considérés" par le
-		//modèle au bout d'une certaine quantitée on arrete de chercher de nouveaux mots
+		//variable pour stocker le nombre de mots qui ont été "considérés" par le modèle au bout d'une certaine quantitée on arrete de chercher de nouveaux mots
 		int toleree=0;
 		String strindDeDebug="";
 		do {
@@ -167,14 +158,12 @@ public class ModeleFrancais extends Wordle{
 
 				break;
 			}
-			//si le mot courant rempli plus de conditions que le meilleur mot, 
-			//il devient le meilleur mot
+			//si le mot courant rempli plus de conditions que le meilleur mot, il devient le meilleur mot
 			if (conditionsRemplies>conditionsMeuilleurMot) {
 				meilleurMot=test;
 				conditionsMeuilleurMot=conditionsRemplies;
 			}
-			//si un mot rempli plus de conditions que le seuil de tolerence 
-			//alors il est compté comme étant "parvenu à l'esprit" du modèle
+			//si un mot rempli plus de conditions que le seuil de tolerence alors il est compté comme étant "parvenu à l'esprit" du modèle
 			if (conditionsRemplies>seuilDeTolerenceDuTour[index]) {
 				toleree++;
 				strindDeDebug+=" a rempli "+conditionsRemplies
@@ -186,8 +175,7 @@ public class ModeleFrancais extends Wordle{
 
 
 
-			//on continue de chercher des mot tant qu'un ne rempli pas toute les 
-			//condition où que le modèle est considéré suffisement d'option et "en ai marre"
+			//on continue de chercher des mot tant qu'un ne rempli pas toute les condition où que le modèle est considéré suffisement d'option et "en ai marre"
 		}while (conditionsRemplies<ConditionsNecessaireDuTour[index]&&toleree<tolerenceDuTour[index]);
 
 		// on écrit le meilleur mot dans l'interface
@@ -207,8 +195,7 @@ public class ModeleFrancais extends Wordle{
 
 		lettresJaunes= new char[5][5];
 
-		//Les cases avant 'A' ne seront jamais utilisée, mais un tableau plus 
-		//grand est plus pratique pour chercher des lettres dirrectement
+		//Les cases avant 'A' ne seront jamais utilisée, mais un tableau plus grand est plus pratique pour chercher des lettres dirrectement
 		NbIterationAutorisee= new int['Z'+1];
 		Arrays.fill(NbIterationAutorisee,0,'A', -1);
 		Arrays.fill(NbIterationAutorisee,'A',NbIterationAutorisee.length, 5);
@@ -311,8 +298,7 @@ public class ModeleFrancais extends Wordle{
 	}
 
 	/**
-	 * méthode qui vérifie si le nombre de voyelle dans la String passé en 
-	 * paramètre est supèrieur ou égale à la constante nbVoyellesMotDepart
+	 * méthode qui vérifie si le nombre de voyelle dans la String passé en paramètre est supèrieur ou égale à la constante nbVoyellesMotDepart
 	 */
 	private boolean nbVoyelleSuffisant(String test) {
 		int nbVoyelle=0;
@@ -326,13 +312,12 @@ public class ModeleFrancais extends Wordle{
 
 
 	/**
-	 * méthode qui vérifie que aucune des lettres du mot passé en paramètre ne 
-	 * soit interdites 
+	 * méthode qui vérifie que aucune des lettres du mot passé en paramètre ne soit interdites 
 	 */
 	private boolean pasDeLettresInterdites(String test) {
 		char[] ret= test.toCharArray();
 		for(int i=0;i<ret.length; i++) {
-			if(NbIterationAutorisee[ret[i]]<NBItération(ret, ret[i])) {
+			if(NbIterationAutorisee[ret[i]]<NBIteration(ret, ret[i])) {
 				return false;
 			}
 		}
@@ -342,7 +327,7 @@ public class ModeleFrancais extends Wordle{
 	/**
 	 * méthode qui renvoie le nombre d'itération d'une lettre dans un tableau de char
 	 */
-	private int NBItération(char[] test, char c) {
+	private int NBIteration(char[] test, char c) {
 		int NBIteration=0;
 		for(char cc : test) {
 			if(cc==c) {
@@ -354,8 +339,7 @@ public class ModeleFrancais extends Wordle{
 
 
 	/**
-	 * méthode qui vérifie qu'aucune des lettres du mot passé en paramètres soit
-	 *  une lettre jaune que l'on aurait déjà évalué à cette position
+	 * méthode qui vérifie qu'aucune des lettres du mot passé en paramètres soit une lettre jaune que l'on aurait déjà évalué à cette position
 	 */
 	private boolean pasDeJaunesRedondantes(String test, int index) {
 		for(int i=0;i<=index; i++) {
@@ -369,8 +353,7 @@ public class ModeleFrancais extends Wordle{
 	}
 
 	/**
-	 * méthode qui vérifie qu'aucune des lettres du mot passé en paramètres ne 
-	 * soit verte
+	 * méthode qui vérifie qu'aucune des lettres du mot passé en paramètres ne soit verte
 	 */
 	private boolean contientPasDeVert(String test,int index) {
 		for(char c : lettresVertes[index]) {
@@ -382,8 +365,7 @@ public class ModeleFrancais extends Wordle{
 	}
 
 	/**
-	 * méthode qui vérifie que le mot passé en paramètre contient toute les 
-	 * lettres vertes
+	 * méthode qui vérifie que le mot passé en paramètre contient toute les lettres vertes
 	 */
 	private boolean TTLesVertes(String test,int index) {
 		for(int i=0; i<lettresVertes.length; i++) {
@@ -396,8 +378,7 @@ public class ModeleFrancais extends Wordle{
 
 
 	/**
-	 * méthode qui vérifie que le mot passé en paramètre contient toute les 
-	 * lettres jaunes
+	 * méthode qui vérifie que le mot passé en paramètre contient toute les lettres jaunes
 	 */
 	private boolean TTLesJaunes(String test, int index) {
 		for(int i=0;i<=index; i++) {
